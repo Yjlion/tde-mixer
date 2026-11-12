@@ -1,0 +1,15 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Exec=tde-mixer-tray
+Icon=tde-mixer
+X-DocPath=tde-mixer/index.html
+Terminal=false
+X-DCOP-ServiceType=Unique
+
+Name=Volume Control
+GenericName=Volume Control in the System Tray
+Comment=Change the volume from the system tray
+Keywords=volume;mixer;sound;audio;tray;
+
+Categories=Qt;TDE;AudioVideo;Audio;Mixer;

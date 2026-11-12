@@ -1,0 +1,7 @@
+Sources of the icons in ../../icons. After changing one, regenerate:
+
+  for f in *.svg; do n=${f%.svg}
+    gzip -9 -n -c $f > ../../icons/hisc-app-$n.svgz
+    sizes="16 22 32 48"; [ $n = tde-mixer ] && sizes="16 22 32 48 64 128"
+    for s in $sizes; do rsvg-convert -w $s -h $s $f -o ../../icons/hi$s-app-$n.png; done
+  done

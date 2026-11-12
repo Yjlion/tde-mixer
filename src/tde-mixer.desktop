@@ -1,0 +1,15 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Exec=tde-mixer %i %m -caption "%c"
+Icon=tde-mixer
+DocPath=tde-mixer/index.html
+X-DocPath=tde-mixer/index.html
+Terminal=false
+
+Name=Volume Mixer
+GenericName=Sound Mixer
+Comment=Volume of applications and sound devices
+Keywords=volume;mixer;sound;audio;pipewire;pulseaudio;speaker;microphone;mute;
+
+Categories=Qt;TDE;AudioVideo;Audio;Mixer;

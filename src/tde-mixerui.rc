@@ -1,0 +1,8 @@
+<!DOCTYPE kpartgui SYSTEM "kpartgui.dtd">
+<kpartgui name="tde-mixer" version="1">
+<MenuBar>
+  <Menu name="settings"><text>&amp;Settings</text>
+    <Action name="open_kcontrol" append="configure_merge"/>
+  </Menu>
+</MenuBar>
+</kpartgui>
