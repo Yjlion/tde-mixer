@@ -1,0 +1,7 @@
+# Trinity installs into its own prefix
+tde-mixer-trinity: dir-or-file-in-opt *
+# Trinity packages live in their own archive section
+tde-mixer-trinity: unknown-section tde
+# the binaries are linked with -z relro -z now, but TDE's tdelfeditor
+# rewrites the ELF files after linking, which hides it from lintian
+tde-mixer-trinity: hardening-no-relro *
