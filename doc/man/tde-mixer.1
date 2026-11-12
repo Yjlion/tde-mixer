@@ -1,0 +1,117 @@
+.\" Manual page for tde-mixer
+.\" Copyright (C) 2026 tde-mixer developers
+.\" This page is distributed under the terms of the GNU GPL version 2 or later.
+.TH TDE\-MIXER 1 "November 2026" "tde-mixer 0.1.0" "Trinity Desktop Environment"
+.SH NAME
+tde\-mixer \- per\-application volume mixer for PipeWire and PulseAudio
+.SH SYNOPSIS
+.B tde\-mixer
+.RB [ \-\-page
+.IR page ]
+.RB [ \-\-backend
+.IR backend ]
+.RI [ "generic TDE and TQt options" ]
+.br
+.B tde\-mixer
+.RB [ \-\-backend
+.IR backend ]
+.B \-\-list
+|
+.BI \-\-volume " percent"
+|
+.B \-\-toggle\-mute
+.br
+.B tdecmshell mixer
+.SH DESCRIPTION
+.B tde\-mixer
+is a volume mixer for the Trinity Desktop Environment. It controls the
+sound server,
+.BR pipewire (1)
+or
+.BR pulseaudio (1),
+rather than the channels of a sound card like
+.BR kmix (1).
+.PP
+It shows one volume slider, mute button and level meter for each
+application that plays or records sound, and lets you move an application
+to another output or input device. It also sets the volume, port and
+default status of each device, and the profile of each sound card.
+.PP
+The same mixer is available as a Trinity Control Center module, under
+.B Sound & Multimedia \(-> Volume Mixer
+or with
+.BR "tdecmshell mixer" ,
+which adds a Settings tab, and in System Settings under
+.BR "Computer Administration" .
+The system tray icon is
+.BR tde\-mixer\-tray (1).
+.SH OPTIONS
+.TP
+.BI \-\-page " page"
+The page shown at start:
+.BR playback " (default), " recording ", " output ", " input " or " configuration .
+.TP
+.BI \-\-backend " backend"
+.B pipewire
+talks to PipeWire directly;
+.B pulse
+uses the PulseAudio protocol, which works with PulseAudio and with
+PipeWire's pulse server;
+.B auto
+uses PipeWire if it is running and PulseAudio otherwise. The default is
+the backend chosen in the settings
+.RB ( auto
+unless changed).
+.TP
+.B \-\-list
+Print the devices (the default marked with
+.BR * ),
+the applications playing and recording sound and the sound cards, then exit.
+.TP
+.BI \-\-volume " percent"
+Set the volume of the default output device and exit.
+.TP
+.B \-\-toggle\-mute
+Mute or unmute the default output device and exit.
+.PP
+The last three options need no X display. All generic TDE and TQt options,
+such as
+.BR \-\-help\-all ,
+are also accepted.
+.SH EXIT STATUS
+0 on success, 2 if the sound server cannot be reached within five seconds,
+3 if there is no output device.
+.SH FILES
+.TP
+.I ~/.trinity/share/config/tde\-mixerrc
+Settings, group
+.BR [General] :
+.B Backend
+(auto, pipewire, pulse),
+.B VolumeStep
+(percent),
+.BR AllowOverAmplify ,
+.BR ShowPeaks ,
+.BR ReplaceKMix .
+.TP
+.I ~/.trinity/share/config/tde\-mixer\-trayrc
+Settings of the tray icon, see
+.BR tde\-mixer\-tray (1).
+.PP
+Volumes, devices and profiles are not stored by tde\-mixer but by the
+sound server (WirePlumber or PulseAudio's restore modules).
+.SH SEE ALSO
+.BR tde\-mixer\-tray (1),
+.BR pipewire (1),
+.BR wireplumber (1),
+.BR wpctl (1),
+.BR pulseaudio (1),
+.BR pactl (1),
+.BR kmix (1)
+.PP
+The handbook is available in the TDE Help Center
+.RI ( help:/tde\-mixer ).
+.SH BUGS
+Please report bugs at
+.UR https://github.com/Yjlion/tde-mixer/issues
+.UE .

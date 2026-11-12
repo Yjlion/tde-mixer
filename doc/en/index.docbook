@@ -1,0 +1,572 @@
+<?xml version="1.0" ?>
+<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.2-Based Variant V1.1//EN" "dtd/kdex.dtd" [
+  <!ENTITY tdemixer "<application>TDE Volume Mixer</application>">
+  <!ENTITY kappname "&tdemixer;">
+  <!ENTITY package "tde-mixer">
+  <!ENTITY pipewire "<application>PipeWire</application>">
+  <!ENTITY pulseaudio "<application>PulseAudio</application>">
+  <!ENTITY kmix "<application>KMix</application>">
+  <!ENTITY % addindex "IGNORE">
+  <!ENTITY % English "INCLUDE">
+]>
+
+<book lang="&language;">
+
+<bookinfo>
+<title>The &tdemixer; Handbook</title>
+
+<authorgroup>
+<author>
+<othername>tde-mixer developers</othername>
+</author>
+</authorgroup>
+
+<copyright>
+<year>2026</year>
+<holder>tde-mixer developers</holder>
+</copyright>
+
+<legalnotice>&FDLNotice;</legalnotice>
+
+<date>2026-11-12</date>
+<releaseinfo>0.1.0</releaseinfo>
+
+<abstract>
+<para>
+&tdemixer; is a volume mixer for &pipewire; and &pulseaudio;. It sets the
+volume of every application that plays or records sound and of every sound
+device, and replaces &kmix; in the system tray. It is available as a
+standalone application, as a Trinity Control Center module, in System
+Settings and as a system tray icon.
+</para>
+</abstract>
+
+<keywordset>
+<keyword>TDE</keyword>
+<keyword>Trinity</keyword>
+<keyword>volume</keyword>
+<keyword>mixer</keyword>
+<keyword>PipeWire</keyword>
+<keyword>PulseAudio</keyword>
+<keyword>KMix</keyword>
+<keyword>sound</keyword>
+</keywordset>
+</bookinfo>
+
+<!-- ================================================================== -->
+
+<chapter id="introduction">
+<title>Introduction</title>
+
+<para>
+Modern Linux systems play sound through a <emphasis>sound server</emphasis>,
+&pipewire; or &pulseaudio;, instead of opening the sound card directly.
+The sound server mixes the sound of all applications, so each application
+has its own volume, and it can send each application to a different
+device: music to the speakers and a video call to a headset, for example.
+</para>
+
+<para>
+&kmix;, the mixer of older TDE releases, controls the channels of the sound
+card itself (Master, PCM, Line, ...). &tdemixer; controls the sound server
+instead. It shows:
+</para>
+
+<itemizedlist>
+<listitem><para>every application that is playing or recording sound, with
+its own volume, mute button, level meter and the device it uses;</para></listitem>
+<listitem><para>every output device (speakers, headphones, HDMI, Bluetooth,
+...) and input device (microphones), with volume, mute, the port (for
+example speakers or headphones jack) and which device is the default;</para></listitem>
+<listitem><para>every sound card with its profile (analog stereo, surround,
+HDMI, headset modes, off).</para></listitem>
+</itemizedlist>
+
+<para>
+It talks to &pipewire; directly or uses the &pulseaudio; protocol, which
+works with a &pulseaudio; daemon and with &pipewire;'s pulse server
+(<command>pipewire-pulse</command>). See <xref linkend="backends"/>.
+</para>
+
+<screenshot>
+<screeninfo>The Playback page</screeninfo>
+<mediaobject>
+<imageobject><imagedata fileref="playback.png" format="PNG"/></imageobject>
+<textobject><phrase>The Playback page with three applications</phrase></textobject>
+</mediaobject>
+</screenshot>
+</chapter>
+
+<!-- ================================================================== -->
+
+<chapter id="getting-started">
+<title>Getting Started</title>
+
+<sect1 id="requirements">
+<title>Requirements</title>
+<itemizedlist>
+<listitem><para>&pipewire; with WirePlumber and <command>pipewire-pulse</command>
+(the default on Debian 12 and 13 desktops), or a &pulseaudio; daemon.</para></listitem>
+<listitem><para>The Trinity Desktop Environment R14.1 or later.</para></listitem>
+</itemizedlist>
+</sect1>
+
+<sect1 id="starting">
+<title>Starting the Mixer</title>
+<para>&tdemixer; can be used in four ways; all show the same mixer.</para>
+
+<variablelist>
+<varlistentry>
+<term>System tray</term>
+<listitem><para>
+The volume icon in the panel's system tray starts automatically at login.
+See <xref linkend="tray"/>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>Standalone application</term>
+<listitem><para>
+Choose <guimenuitem>Volume Mixer</guimenuitem> in the
+<guimenu>Multimedia</guimenu> section of the TDE menu, choose
+<guimenuitem>Open Mixer</guimenuitem> in the tray icon's menu, or run
+<userinput><command>tde-mixer</command></userinput>.
+</para></listitem>
+</varlistentry>
+
+<varlistentry>
+<term>Trinity Control Center</term>
+<listitem><para>
+Open the Control Center and choose
+<menuchoice><guimenu>Sound &amp; Multimedia</guimenu><guimenuitem>Volume Mixer</guimenuitem></menuchoice>,
+or run <userinput><command>tdecmshell</command> <option>mixer</option></userinput>.
+The module has an additional <guilabel>Settings</guilabel> tab, see
+<xref linkend="settings"/>.
+</para>
+
+<screenshot>
+<screeninfo>The Volume Mixer in the Control Center</screeninfo>
+<mediaobject>
+<imageobject><imagedata fileref="kcontrol.png" format="PNG"/></imageobject>
+<textobject><phrase>The Volume Mixer module in the Trinity Control Center</phrase></textobject>
+</mediaobject>
+</screenshot>
+</listitem>
+</varlistentry>
+
+<varlistentry>
+<term>System Settings</term>
+<listitem><para>
+In System Settings (<command>systemsettings</command>), the module is in
+<guilabel>Computer Administration</guilabel>, next to
+<guilabel>Sound System</guilabel>.
+</para>
+
+<screenshot>
+<screeninfo>System Settings</screeninfo>
+<mediaobject>
+<imageobject><imagedata fileref="systemsettings.png" format="PNG"/></imageobject>
+<textobject><phrase>The Volume Mixer in System Settings</phrase></textobject>
+</mediaobject>
+</screenshot>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect1>
+</chapter>
+
+<!-- ================================================================== -->
+
+<chapter id="using">
+<title>Using the Mixer</title>
+
+<para>
+The mixer has five pages. Every change takes effect at once and is
+remembered by the sound server; there is nothing to save.
+</para>
+
+<sect1 id="rows">
+<title>Volume Rows</title>
+<para>
+Every application and device is shown as a row with:
+</para>
+<variablelist>
+<varlistentry><term>Icon and name</term>
+<listitem><para>For an application, its name and what it is playing (the
+<quote>media name</quote>, for example the title of a song or video);
+<quote>(paused)</quote> is added while it is paused. For a device, its
+description and its internal name.</para></listitem></varlistentry>
+
+<varlistentry><term>Volume slider</term>
+<listitem><para>From 0 to 100 %, or to 150 % if amplification is allowed in
+the settings. The slider keeps the balance between the channels: if the
+left channel is quieter than the right one, both are moved together. The
+tooltip of the slider shows the volume of each channel.</para></listitem></varlistentry>
+
+<varlistentry><term>Mute button</term>
+<listitem><para>The speaker button left of the slider mutes and unmutes.
+Its icon shows the volume.</para></listitem></varlistentry>
+
+<varlistentry><term>Level meter</term>
+<listitem><para>The bar under the slider shows how loud the sound is right
+now: green, then yellow above 75 % and red above 95 % of full scale. The
+meters can be turned off in the settings.</para></listitem></varlistentry>
+</variablelist>
+</sect1>
+
+<sect1 id="playback">
+<title>Playback</title>
+<para>
+One row for each application that is playing sound. The list at the top
+right of a row selects the output device: choose another device to move
+the application there, for example from the speakers to headphones. The
+application keeps playing.
+</para>
+<para>
+The sound server remembers the volume and the device of each application,
+and uses them the next time the application plays sound.
+</para>
+</sect1>
+
+<sect1 id="recording">
+<title>Recording</title>
+<para>
+One row for each application that records sound, with the input device it
+records from. Besides microphones, the list offers the
+<quote>monitor</quote> of each output device, which records what is played
+on it.
+</para>
+
+<screenshot>
+<screeninfo>The Recording page</screeninfo>
+<mediaobject>
+<imageobject><imagedata fileref="recording.png" format="PNG"/></imageobject>
+<textobject><phrase>An application recording from the microphone</phrase></textobject>
+</mediaobject>
+</screenshot>
+</sect1>
+
+<sect1 id="output-devices">
+<title>Output Devices</title>
+<para>
+The speakers, headphones, HDMI outputs and other output devices.
+<guilabel>Default</guilabel> marks the device that new sounds are played
+on; select it on another device to make that the default. Applications that
+were not moved to a device by hand follow the default.
+</para>
+<para>
+If a device has more than one <guilabel>Port</guilabel>, for example
+<quote>Speakers</quote> and <quote>Headphones</quote> on a laptop's sound
+card, the port can be chosen from the list. Unplugged ports are marked.
+</para>
+
+<screenshot>
+<screeninfo>The Output Devices page</screeninfo>
+<mediaobject>
+<imageobject><imagedata fileref="output-devices.png" format="PNG"/></imageobject>
+<textobject><phrase>Two output devices; Speakers is the default</phrase></textobject>
+</mediaobject>
+</screenshot>
+</sect1>
+
+<sect1 id="input-devices">
+<title>Input Devices</title>
+<para>
+The microphones and other inputs, with the same controls as the output
+devices. Monitor sources are not listed here.
+</para>
+</sect1>
+
+<sect1 id="configuration">
+<title>Configuration</title>
+<para>
+One row for each sound card with its <guilabel>Profile</guilabel>. The
+profile decides which devices a card offers: for example <quote>Analog
+Stereo Duplex</quote> (speakers and microphone), <quote>Digital Stereo
+(HDMI)</quote>, a surround setup, or <quote>Off</quote>. Bluetooth headsets
+offer a high quality playback profile and a headset profile with a
+microphone. Profiles that cannot be used right now (for example HDMI without
+a monitor connected) are marked <quote>unavailable</quote>.
+</para>
+</sect1>
+</chapter>
+
+<!-- ================================================================== -->
+
+<chapter id="tray">
+<title>The System Tray Icon</title>
+
+<para>
+<command>tde-mixer-tray</command> shows a speaker in the panel's system
+tray. It replaces &kmix;'s tray icon and starts automatically at login.
+</para>
+
+<variablelist>
+<varlistentry><term>Icon and tooltip</term>
+<listitem><para>The icon shows the volume of the default output device, or
+that it is muted. The tooltip shows the volume, the device and how many
+applications are playing sound. The icon is gray while no sound server is
+reachable.</para></listitem></varlistentry>
+
+<varlistentry><term>Left click</term>
+<listitem><para>Opens a small window with the volume of the default output
+device and of each application that plays sound. <guibutton>Mixer...</guibutton>
+opens the full mixer.</para></listitem></varlistentry>
+
+<varlistentry><term>Middle click</term>
+<listitem><para>Mutes or unmutes the default output device.</para></listitem></varlistentry>
+
+<varlistentry><term>Mouse wheel</term>
+<listitem><para>Changes the volume of the default output device by the
+volume step (5 % unless changed in the settings).</para></listitem></varlistentry>
+
+<varlistentry><term>Right click</term>
+<listitem><para>The menu offers <guimenuitem>Open Mixer</guimenuitem>, the
+<guisubmenu>Output Device</guisubmenu> to make another device the default,
+<guimenuitem>Mute</guimenuitem>, <guimenuitem>Configure Volume Control...</guimenuitem>
+(the Control Center module), <guimenuitem>Configure Shortcuts...</guimenuitem>
+and <guimenuitem>Start Automatically at Login</guimenuitem>.</para></listitem></varlistentry>
+</variablelist>
+
+<screenshot>
+<screeninfo>The tray icon's window</screeninfo>
+<mediaobject>
+<imageobject><imagedata fileref="tray-popup.png" format="PNG"/></imageobject>
+<textobject><phrase>The volume window of the tray icon</phrase></textobject>
+</mediaobject>
+</screenshot>
+
+<sect1 id="volume-keys">
+<title>Volume Keys</title>
+<para>
+While the tray icon runs, the volume keys of the keyboard work:
+<keycap>Volume Up</keycap> and <keycap>Volume Down</keycap> change the
+volume of the default output device by the volume step,
+<keycap>Mute</keycap> mutes it and <keycap>Microphone Mute</keycap> mutes
+the default input device. Other keys can be chosen with
+<guimenuitem>Configure Shortcuts...</guimenuitem> in the tray icon's menu.
+</para>
+</sect1>
+
+<sect1 id="replacing-kmix">
+<title>Replacing KMix</title>
+<para>
+&tdemixer; can be installed next to &kmix;. If &kmix; is set to start at
+login, the tray icon asks once, when it starts for the first time, whether
+&kmix; should be turned off. Choosing <guibutton>Turn KMix Off</guibutton>
+sets <literal>Autostart=false</literal> in &kmix;'s configuration
+(<filename>kmixrc</filename>) and quits a running &kmix;. &kmix; stays
+installed and can be started from the menu at any time; to start it at
+login again, enable <guilabel>Restore on login</guilabel> in &kmix;'s settings.
+</para>
+<para>
+The question can be turned off with <guilabel>Offer to turn off KMix's tray
+icon</guilabel> in the settings.
+</para>
+</sect1>
+</chapter>
+
+<!-- ================================================================== -->
+
+<chapter id="settings">
+<title>Settings</title>
+
+<para>
+The settings are on the <guilabel>Settings</guilabel> tab of the Control
+Center module, and in <menuchoice><guimenu>Settings</guimenu><guimenuitem>Configure
+Volume Mixer...</guimenuitem></menuchoice> of the standalone mixer.
+</para>
+
+<variablelist>
+<varlistentry><term><guilabel>Backend</guilabel></term>
+<listitem><para>How the mixer talks to the sound server, see
+<xref linkend="backends"/>. A change takes effect the next time the mixer,
+the module or the tray icon starts.</para></listitem></varlistentry>
+
+<varlistentry><term><guilabel>Step for the volume keys and the mouse wheel</guilabel></term>
+<listitem><para>From 1 to 25 %, 5 % by default.</para></listitem></varlistentry>
+
+<varlistentry><term><guilabel>Allow volumes above 100 %</guilabel></term>
+<listitem><para>Lets the sliders go up to 150 %. Sound above 100 % is
+amplified in software and can be distorted.</para></listitem></varlistentry>
+
+<varlistentry><term><guilabel>Show level meters</guilabel></term>
+<listitem><para>Shows the level meters under the sliders. The meters
+record a small amount of sound from each device and application, which
+costs a little processor time.</para></listitem></varlistentry>
+
+<varlistentry><term><guilabel>Start the volume control in the system tray at login</guilabel></term>
+<listitem><para>Same as <guimenuitem>Start Automatically at Login</guimenuitem>
+in the tray icon's menu.</para></listitem></varlistentry>
+
+<varlistentry><term><guilabel>Offer to turn off KMix's tray icon</guilabel></term>
+<listitem><para>See <xref linkend="replacing-kmix"/>.</para></listitem></varlistentry>
+</variablelist>
+
+<screenshot>
+<screeninfo>The Settings tab</screeninfo>
+<mediaobject>
+<imageobject><imagedata fileref="settings.png" format="PNG"/></imageobject>
+<textobject><phrase>The Settings tab of the Control Center module</phrase></textobject>
+</mediaobject>
+</screenshot>
+</chapter>
+
+<!-- ================================================================== -->
+
+<chapter id="backends">
+<title>PipeWire and PulseAudio</title>
+
+<para>
+&tdemixer; has two backends:
+</para>
+
+<variablelist>
+<varlistentry><term>PipeWire</term>
+<listitem><para>
+Talks to &pipewire; directly. Volumes of sound cards are set on the card's
+active route, so that WirePlumber saves them, and applications are moved
+and defaults chosen through WirePlumber's settings
+(<quote>metadata</quote>), the same way <command>wpctl</command> and
+<command>pipewire-pulse</command> do it.
+</para></listitem>
+</varlistentry>
+
+<varlistentry><term>PulseAudio</term>
+<listitem><para>
+Uses the &pulseaudio; protocol (<filename>libpulse</filename>). This works
+with a &pulseaudio; daemon and with &pipewire;'s pulse server, so it is also
+a fallback on &pipewire; systems.
+</para></listitem>
+</varlistentry>
+</variablelist>
+
+<para>
+<guilabel>Automatic</guilabel>, the default, uses the &pipewire; backend if
+a &pipewire; daemon is running and the &pulseaudio; backend otherwise. The
+backend in use is shown at the bottom of the mixer. If the sound server is
+restarted, the mixer reconnects by itself.
+</para>
+
+<para>
+Both backends show the same thing. Applications using ALSA directly
+without going through the sound server (rare on current systems) are not
+listed.
+</para>
+</chapter>
+
+<!-- ================================================================== -->
+
+<chapter id="commands">
+<title>Command Line</title>
+
+<para>
+<command>tde-mixer</command> accepts these options besides the generic TDE
+and TQt options:
+</para>
+
+<variablelist>
+<varlistentry><term><option>--page</option> <replaceable>page</replaceable></term>
+<listitem><para>The page to show: <literal>playback</literal>,
+<literal>recording</literal>, <literal>output</literal>, <literal>input</literal>
+or <literal>configuration</literal>.</para></listitem></varlistentry>
+
+<varlistentry><term><option>--backend</option> <replaceable>backend</replaceable></term>
+<listitem><para><literal>auto</literal>, <literal>pipewire</literal> or
+<literal>pulse</literal>, instead of the backend in the settings.</para></listitem></varlistentry>
+
+<varlistentry><term><option>--list</option></term>
+<listitem><para>Prints the devices, applications and sound cards and exits.
+Needs no display.</para></listitem></varlistentry>
+
+<varlistentry><term><option>--volume</option> <replaceable>percent</replaceable></term>
+<listitem><para>Sets the volume of the default output device and exits.</para></listitem></varlistentry>
+
+<varlistentry><term><option>--toggle-mute</option></term>
+<listitem><para>Mutes or unmutes the default output device and exits.</para></listitem></varlistentry>
+</variablelist>
+
+<para>
+The manual pages <command>man tde-mixer</command> and <command>man
+tde-mixer-tray</command> describe the programs and their files.
+</para>
+</chapter>
+
+<!-- ================================================================== -->
+
+<chapter id="troubleshooting">
+<title>Troubleshooting</title>
+
+<qandaset>
+<qandaentry>
+<question><para>The mixer says <quote>Not connected to a sound server</quote>.</para></question>
+<answer><para>
+No sound server is running for your user. On &pipewire; systems check
+<userinput><command>systemctl --user status pipewire pipewire-pulse wireplumber</command></userinput>;
+on &pulseaudio; systems <userinput><command>pulseaudio --check</command></userinput>.
+The mixer connects as soon as the server is up.
+</para></answer>
+</qandaentry>
+
+<qandaentry>
+<question><para>An application is missing from the Playback page.</para></question>
+<answer><para>
+Only applications that currently have a sound stream open are shown. Many
+applications only open one while they play.
+</para></answer>
+</qandaentry>
+
+<qandaentry>
+<question><para>There are two volume icons in the system tray.</para></question>
+<answer><para>
+&kmix; is running too. Quit it and turn off its <guilabel>Restore on
+login</guilabel>, or see <xref linkend="replacing-kmix"/>.
+</para></answer>
+</qandaentry>
+
+<qandaentry>
+<question><para>The volume keys do nothing.</para></question>
+<answer><para>
+The keys are handled by the tray icon, which must be running. Another
+program (for example &kmix;) may have taken the keys first; quit it and
+restart the tray icon. <guimenuitem>Configure Shortcuts...</guimenuitem> in the
+tray icon's menu shows which keys are used.
+</para></answer>
+</qandaentry>
+
+<qandaentry>
+<question><para>Moving an application to another device does nothing on
+&pipewire;.</para></question>
+<answer><para>
+Moving needs a session manager. Check that WirePlumber is running.
+</para></answer>
+</qandaentry>
+</qandaset>
+</chapter>
+
+<!-- ================================================================== -->
+
+<chapter id="credits">
+<title>Credits and License</title>
+
+<para>
+&tdemixer;
+</para>
+<para>
+Program copyright 2026 tde-mixer developers.
+Project home page: <ulink url="https://github.com/Yjlion/tde-mixer">https://github.com/Yjlion/tde-mixer</ulink>
+</para>
+<para>
+&tdemixer; is a client of &pipewire; (<ulink url="https://pipewire.org">https://pipewire.org</ulink>)
+and &pulseaudio; (<ulink url="https://www.freedesktop.org/wiki/Software/PulseAudio/">https://www.freedesktop.org/wiki/Software/PulseAudio/</ulink>).
+</para>
+
+<!-- TRANS:CREDIT_FOR_TRANSLATORS -->
+
+&underFDL;
+&underGPL;
+
+</chapter>
+
+&documentation.index;
+</book>
