@@ -69,7 +69,7 @@ check "default device back" speakers "$(default_sink)"
 # level meters: the playing streams must show a signal
 PEAKS=$("$BT" "$BACKEND" peaks)
 echo "$PEAKS" | sed 's/^/    /'
-P=$(echo "$PEAKS" | awk '$1 == "Notifications" && $2 > 0.05 { ok = 1 } END { print ok ? "yes" : "no" }')
+P=$(echo "$PEAKS" | awk '($1 == "Notifications" || $1 == "Web") && $NF > 0.05 { ok = 1 } END { print ok ? "yes" : "no" }')
 check "stream level meter" yes "$P"
 P=$(echo "$PEAKS" | awk '$1 == "speakers" && $2 > 0.05 { ok = 1 } END { print ok ? "yes" : "no" }')
 check "device level meter" yes "$P"

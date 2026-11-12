@@ -16,6 +16,14 @@ if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
 	dbus-daemon --session --fork --address="$DBUS_SESSION_BUS_ADDRESS" >/dev/null 2>&1
 fi
 
+# stop the servers and players of an earlier run
+PIDFILE=$XDG_RUNTIME_DIR/tde-mixer-test.pids
+[ -f "$PIDFILE" ] && kill $(cat "$PIDFILE") 2>/dev/null
+rm -f "$PIDFILE"
+for p in paplay parecord pipewire-pulse wireplumber pipewire pulseaudio; do pkill -x $p; done
+sleep 1
+rm -f "$XDG_RUNTIME_DIR"/pipewire-0* "$XDG_RUNTIME_DIR"/pulse/native 2>/dev/null
+
 wait_for_server() {
 	for i in $(seq 1 50); do pactl info >/dev/null 2>&1 && return 0; sleep 0.2; done
 	echo "sound server did not start" >&2; return 1
@@ -63,6 +71,7 @@ start_test_streams() {
 	play_loop() { # file app icon media
 		(while :; do paplay --property="application.name=$2" --property="application.icon_name=$3" \
 			--property="media.name=$4" "$1" || sleep 1; done) >/dev/null 2>&1 &
+		echo $! >> "$PIDFILE"
 	}
 	play_loop /tmp/tone-a.wav "Music Player" "juk" "Ocean Waves - Track 3"
 	play_loop /tmp/tone-b.wav "Web Browser" "konqueror" "Video - Rain sounds"
