@@ -1,0 +1,20 @@
+[Desktop Entry]
+Encoding=UTF-8
+Type=Application
+Exec=tde-mixer-tray
+Icon=tde-mixer
+OnlyShowIn=TDE;
+X-TDE-autostart-after=panel
+X-TDE-autostart-phase=2
+X-TDE-StartupNotify=false
+X-TDE-UniqueApplet=true
+# Started by default. Turn it off with "Start Automatically at Login" in the
+# tray icon's menu or in the module's Settings tab, which sets
+# [General] Autostart=false in tde-mixer-trayrc.
+X-TDE-autostart-condition=tde-mixer-trayrc:General:Autostart:true
+
+Name=Volume Control
+GenericName=Volume Control in the System Tray
+Comment=Change the volume from the system tray
+
+Categories=AudioVideo;Audio;Applet;

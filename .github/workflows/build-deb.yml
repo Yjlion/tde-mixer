@@ -1,0 +1,133 @@
+name: Build Debian packages
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Debian ${{ matrix.suite }}
+    runs-on: ubuntu-latest
+    container: debian:${{ matrix.suite }}
+    strategy:
+      fail-fast: false
+      matrix:
+        suite: [ bookworm, trixie ]
+    env:
+      DEBIAN_FRONTEND: noninteractive
+      TDE_MIRROR: http://mirror.ppa.trinitydesktop.org/trinity/deb/trinity-r14.1.x
+      DEBFULLNAME: GitHub Actions
+      DEBEMAIL: actions@users.noreply.github.com
+      # where tools/audio-test-env.sh starts the test sound servers
+      XDG_RUNTIME_DIR: /tmp/runtime-ci
+
+    steps:
+      - name: Install base tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates curl gnupg git
+
+      - name: Add the Trinity Desktop repository
+        run: |
+          curl -fsSL --retry 5 -o /tmp/trinity-keyring.deb \
+            https://mirror.ppa.trinitydesktop.org/trinity/deb/trinity-keyring.deb
+          apt-get install -y /tmp/trinity-keyring.deb
+          echo "deb ${TDE_MIRROR} ${{ matrix.suite }} main deps" \
+            > /etc/apt/sources.list.d/trinity.list
+          apt-get update
+
+      - name: Check out the source
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          apt-get install -y --no-install-recommends build-essential devscripts equivs lintian
+          mk-build-deps --install --remove \
+            --tool 'apt-get -y --no-install-recommends' debian/control
+          rm -f tde-mixer-build-deps_*
+
+      - name: Build the package
+        run: |
+          # add the suite to the version so packages for both suites can be
+          # published side by side
+          VERSION=$(dpkg-parsechangelog -S Version)
+          dch --newversion "${VERSION}+${{ matrix.suite }}" --distribution ${{ matrix.suite }} \
+              --force-distribution "Build for Debian ${{ matrix.suite }}."
+          dpkg-buildpackage -us -uc -b
+          mkdir -p artifacts
+          mv ../*.deb ../*.buildinfo ../*.changes artifacts/
+
+      - name: Run lintian
+        continue-on-error: true
+        run: lintian --info --display-info artifacts/*.changes
+
+      - name: Test installation
+        run: |
+          apt-get install -y --no-install-recommends ./artifacts/tde-mixer-trinity_*.deb \
+            pipewire pipewire-pulse wireplumber pipewire-bin pulseaudio-utils dbus sox
+          test -x /opt/trinity/bin/tde-mixer
+          test -x /opt/trinity/bin/tde-mixer-tray
+          test -f /opt/trinity/lib/trinity/kcm_mixer.so
+          test -f /opt/trinity/share/applications/tde/mixer.desktop
+          grep -q 'X-TDE-systemsettings-administration' /opt/trinity/share/applications/tde/mixer.desktop
+          test -f /opt/trinity/share/doc/tde/HTML/en/tde-mixer/index.cache.bz2
+          test -f /opt/trinity/share/doc/tde/HTML/en/tde-mixer/playback.png
+          test -f /opt/trinity/share/man/man1/tde-mixer.1
+          test -f /opt/trinity/share/man/man1/tde-mixer-tray.1
+          test -f /opt/trinity/share/icons/hicolor/22x22/apps/tde-mixer-high.png
+          # the tray icon starts at login unless the user turns it off
+          grep -qx 'X-TDE-autostart-condition=tde-mixer-trayrc:General:Autostart:true' \
+            /opt/trinity/share/autostart/tde-mixer-tray-autostart.desktop
+          /opt/trinity/bin/tde-mixer --version
+          /opt/trinity/bin/tde-mixer-tray --version
+
+      - name: Test the PipeWire backend against PipeWire
+        run: |
+          tests/run-backend-tests.sh obj-*/tests/backendtest pipewire pipewire
+          /opt/trinity/bin/tde-mixer --list --backend pipewire
+
+      - name: Test the PulseAudio backend against PipeWire
+        run: |
+          tests/run-backend-tests.sh obj-*/tests/backendtest pulse pipewire
+          /opt/trinity/bin/tde-mixer --list --backend pulse
+
+      - name: Test the PulseAudio backend against PulseAudio
+        run: |
+          pkill -x pipewire-pulse || true
+          pkill -x wireplumber || true
+          pkill -x pipewire || true
+          apt-get install -y --no-install-recommends pulseaudio
+          tests/run-backend-tests.sh obj-*/tests/backendtest pulse pulse
+          /opt/trinity/bin/tde-mixer --list --backend auto
+
+      - name: Upload packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: tde-mixer-${{ matrix.suite }}
+          path: artifacts/*.deb
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: packages
+          merge-multiple: true
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: packages/*.deb
+          generate_release_notes: true

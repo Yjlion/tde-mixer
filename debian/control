@@ -1,0 +1,45 @@
+Source: tde-mixer
+Section: tde
+Priority: optional
+Maintainer: Yjlion <yjlion@gmail.com>
+Build-Depends: debhelper-compat (= 13),
+               cmake,
+               tde-cmake,
+               tdelibs14-trinity-dev,
+               libtqt3-mt-dev,
+               libtqtinterface-dev,
+               libpipewire-0.3-dev,
+               libpulse-dev,
+               pkgconf | pkg-config
+Standards-Version: 4.6.2
+Homepage: https://github.com/Yjlion/tde-mixer
+Vcs-Browser: https://github.com/Yjlion/tde-mixer
+Vcs-Git: https://github.com/Yjlion/tde-mixer.git
+Rules-Requires-Root: no
+
+Package: tde-mixer-trinity
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         pipewire-pulse | pulseaudio
+Recommends: wireplumber | pulseaudio,
+            kcontrol-trinity,
+            khelpcenter-trinity
+Suggests: tde-systemsettings-trinity
+Description: per-application volume mixer for PipeWire and PulseAudio [Trinity]
+ tde-mixer is a volume mixer for the Trinity Desktop Environment that
+ controls the sound server instead of the sound card, like the mixers of
+ other current desktops. It replaces KMix in the system tray.
+ .
+ It shows a volume slider, mute button and level meter for each application
+ that plays or records sound and can move an application to another output
+ or input device. It sets the volume, port and default of each device and
+ the profile of each sound card.
+ .
+ It is available as a standalone application, as a Trinity Control Center
+ module (Sound & Multimedia > Volume Mixer), in System Settings, and as a
+ system tray icon that handles the keyboard's volume keys and starts at
+ login. It can turn off KMix's tray icon, but does not need KMix removed.
+ .
+ It talks to PipeWire natively or uses the PulseAudio protocol, which works
+ with PulseAudio and with PipeWire's pulse server.

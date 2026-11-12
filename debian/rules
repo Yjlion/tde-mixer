@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+
+%:
+	dh $@ --buildsystem=cmake
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		-DCMAKE_INSTALL_PREFIX="/opt/trinity" \
+		-DCMAKE_INSTALL_LIBDIR="lib" \
+		-DCONFIG_INSTALL_DIR="/etc/trinity" \
+		-DSYSCONF_INSTALL_DIR="/etc" \
+		-DXDG_MENU_INSTALL_DIR="/etc/xdg/menus" \
+		-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+		-DCMAKE_SKIP_RPATH="OFF" \
+		-DBUILD_ALL="ON" \
+		-DBUILD_TESTS="ON"
+
+override_dh_shlibdeps:
+	dh_shlibdeps -l/opt/trinity/lib
+
+# the static helper library, libtool files and the test program are not
+# installed
+override_dh_auto_install:
+	dh_auto_install
+	find debian/tde-mixer-trinity -name '*.la' -delete

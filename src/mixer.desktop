@@ -1,0 +1,19 @@
+[Desktop Entry]
+Encoding=UTF-8
+Exec=tdecmshell mixer
+Icon=tde-mixer
+Type=Application
+
+X-TDE-ModuleType=Library
+X-TDE-Library=mixer
+X-TDE-RootOnly=false
+X-TDE-ParentApp=kcontrol
+X-DocPath=tde-mixer/index.html
+
+Name=Volume Mixer
+Comment=Volume of applications and sound devices (PipeWire, PulseAudio)
+Keywords=volume;mixer;sound;audio;pipewire;pulseaudio;speaker;microphone;headphones;mute;kmix;
+
+# X-TDE-settings-sound: Control Center, Sound & Multimedia
+# X-TDE-systemsettings-administration: System Settings, Computer Administration
+Categories=Qt;TDE;X-TDE-settings-sound;X-TDE-systemsettings-administration;

@@ -1,0 +1,92 @@
+.\" Manual page for tde-mixer-tray
+.\" Copyright (C) 2026 tde-mixer developers
+.\" This page is distributed under the terms of the GNU GPL version 2 or later.
+.TH TDE\-MIXER\-TRAY 1 "November 2026" "tde-mixer 0.1.0" "Trinity Desktop Environment"
+.SH NAME
+tde\-mixer\-tray \- volume control in the TDE system tray
+.SH SYNOPSIS
+.B tde\-mixer\-tray
+.RI [ "generic TDE and TQt options" ]
+.SH DESCRIPTION
+.B tde\-mixer\-tray
+shows the volume of the default output device in the system tray of the
+Kicker panel and replaces the tray icon of
+.BR kmix (1).
+It works with PipeWire and PulseAudio, using the backend chosen in the
+settings of
+.BR tde\-mixer (1).
+.PP
+.TP
+.B Left click
+opens a window with the volume of the default output device and of each
+application that plays sound, and a button to open the full mixer.
+.TP
+.B Middle click
+mutes or unmutes the default output device.
+.TP
+.B Mouse wheel
+changes the volume of the default output device by the volume step
+(5 % by default).
+.TP
+.B Right click
+opens a menu to open the mixer, choose the default output device, mute,
+configure the volume control and its shortcuts, and turn the autostart
+at login on or off.
+.PP
+While it runs, the keyboard's volume keys (XF86AudioRaiseVolume,
+XF86AudioLowerVolume, XF86AudioMute) change the default output device and
+XF86AudioMicMute mutes the default input device. The keys can be changed
+with
+.B Configure Shortcuts
+in the menu.
+.PP
+Only one instance runs per session; starting it again does nothing.
+.SH AUTOSTART
+The icon is started at login by default. Unchecking
+.B Start Automatically at Login
+in its menu, or the matching setting in the Control Center module, sets
+.B Autostart=false
+in the
+.B [General]
+group of
+.IR tde\-mixer\-trayrc .
+.SH KMIX
+When it starts for the first time and KMix is set to start at login, it
+asks once whether KMix should be turned off. If you agree, it sets
+.B Autostart=false
+in the
+.B [General]
+group of
+.I kmixrc
+and quits a running KMix. KMix stays installed. The question is not asked
+when
+.B ReplaceKMix=false
+is set in
+.IR tde\-mixerrc .
+.SH FILES
+.TP
+.I ~/.trinity/share/config/tde\-mixer\-trayrc
+.B [General] Autostart
+(default true),
+.B KMixChecked
+(the KMix question was asked).
+.TP
+.I ~/.trinity/share/config/tde\-mixerrc
+Shared settings, see
+.BR tde\-mixer (1).
+.TP
+.I /opt/trinity/share/autostart/tde\-mixer\-tray\-autostart.desktop
+Session autostart entry, guarded by
+.BR X\-TDE\-autostart\-condition=tde\-mixer\-trayrc:General:Autostart:true .
+.SH SEE ALSO
+.BR tde\-mixer (1),
+.BR kmix (1),
+.BR pipewire (1),
+.BR pulseaudio (1)
+.PP
+The handbook is available in the TDE Help Center
+.RI ( help:/tde\-mixer/tray.html ).
+.SH BUGS
+Please report bugs at
+.UR https://github.com/Yjlion/tde-mixer/issues
+.UE .
