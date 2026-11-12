@@ -11,6 +11,12 @@
 AUDIO_SERVER=${AUDIO_SERVER:-pipewire}
 export XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/tmp/runtime-$(id -u)}
 mkdir -p "$XDG_RUNTIME_DIR"; chmod 700 "$XDG_RUNTIME_DIR"
+# PulseAudio refuses to start with a home directory owned by someone else,
+# like /github/home in a GitHub Actions container (owned by the runner user)
+if [ ! -O "$HOME" ]; then
+	export HOME=$XDG_RUNTIME_DIR/home
+	mkdir -p "$HOME"
+fi
 if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ]; then
 	export DBUS_SESSION_BUS_ADDRESS=unix:path=$XDG_RUNTIME_DIR/bus
 	dbus-daemon --session --fork --address="$DBUS_SESSION_BUS_ADDRESS" >/dev/null 2>&1
@@ -30,8 +36,10 @@ wait_for_server() {
 }
 
 if [ "$AUDIO_SERVER" = pulse ]; then
+	# anonymous: clients with another HOME (no cookie) may connect too
 	pulseaudio --daemonize=yes --exit-idle-time=-1 --log-target=stderr -n \
-		-L module-native-protocol-unix -L module-always-sink >/dev/null 2>&1
+		-L "module-native-protocol-unix auth-anonymous=1" -L module-always-sink \
+		>/tmp/pulseaudio.log 2>&1 || cat /tmp/pulseaudio.log >&2
 	wait_for_server
 	pactl load-module module-null-sink sink_name=speakers \
 		sink_properties=device.description=Speakers >/dev/null

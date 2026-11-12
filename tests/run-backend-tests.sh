@@ -80,7 +80,8 @@ WAITER=$!
 sleep 3
 if [ "$SERVER" = pulse ]; then
 	pulseaudio -k; sleep 1
-	pulseaudio --daemonize=yes --exit-idle-time=-1 -n -L module-native-protocol-unix -L module-always-sink
+	pulseaudio --daemonize=yes --exit-idle-time=-1 -n \
+		-L "module-native-protocol-unix auth-anonymous=1" -L module-always-sink
 else
 	pkill -x pipewire-pulse; pkill -x wireplumber; pkill -x pipewire; sleep 1
 	(pipewire >/tmp/pipewire.log 2>&1 &); sleep 1
