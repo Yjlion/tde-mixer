@@ -74,6 +74,7 @@ jobs:
           test -x /opt/trinity/bin/tde-mixer
           test -x /opt/trinity/bin/tde-mixer-tray
           test -f /opt/trinity/lib/trinity/kcm_mixer.so
+          test -f /opt/trinity/lib/trinity/kcm_mixer.la
           test -f /opt/trinity/share/applications/tde/mixer.desktop
           grep -q 'X-TDE-systemsettings-administration' /opt/trinity/share/applications/tde/mixer.desktop
           test -f /opt/trinity/share/doc/tde/HTML/en/tde-mixer/index.cache.bz2
